@@ -1,0 +1,357 @@
+---
+title: "198645_ToryVote"
+output: pdf_document
+---
+Note 
+
+Stargazer table and a chunk of codes have been included in the appendix section right after the summary section.
+
+Question 1a
+
+The following predictors affect the likelihood of ever voting for the conservative party. Variable (rile) - the more you are placed on the right, the more likely you are to vote for the conservative party because right wing ideologies are conservative. Variable Age - the more older you are, the more likely you are to vote for conservative party because older people tend to be closed minded in comparison to younger people. Variable education - the more educated you are the less likely you are to vote for the conservative party because educated people are open minded. Variable income - the more rich you are, the more likely you are to vote for the conservative party because rich people tend to be comfortable with existing economic conditions that are in their favor.
+
+Question 1b
+
+con_like ~ a + B1(rile)+ B2(age)- B3(educ)+ B4(income)+ e
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+rm(list=ls())
+
+setwd("C:/Users/Gus/Documents/Hertie/Courses/Stats I/FDA Ass")
+getwd
+
+library(carData)
+library(foreign)
+library(stargazer)
+library(car)
+library(ggplot2) 
+library(dplyr) 
+library(tidyr) 
+library(psych)
+library(tinytex)
+
+mbogo <- read.dta("ToryVote_final_da.dta")
+
+```
+
+Question 2a
+```{r, echo=FALSE}
+
+mbili <- lm(con_like~rile+ age+educ+income, data = mbogo)
+summary(mbili)
+
+```
+Question 2b
+
+Predictor rile - inline with expectations, a unit increase in left- right self placement leads to, on average, a 1.263932 unit increase in the likelihood of ever voting for the coservative party. This is statistically significant at 5% level with a t-value of 22.569 which is greater than 2.
+
+Predictor age - inline with expectations, a unit increase in age leads to, on avearge, a  0.003128 unit increase in the likelihood of ever voting for the conservative party. However, this is not statistically significant at 5% level since its t-value is 0.497 which is lower than 2.
+
+Predictor educ- In line with expectations, a unit increase in years of education leads to, on average, a 0.041642 unit decrease in the likelihood of ever voting for the conservative party. However, this is not statistically significant at 5% level since its t-value is -0.806 which is below 2 in absolute terms.
+
+Predictor income- inline with expectations, a unit increase in income leads to, on avearge, a 0.122638 unit increase in the likelohood of ever voting for the conservative party. This is statistically significant at 5% level since its t-value is 4.232 which is above 2.
+
+Question 2c
+Yes. It is correct because left right placement is both substantively and statistically significant. Its direction of effect is also in line with prediction.
+
+Question 2d 
+The model's R squared is 0.4982 which means that the model explains 49.82 percent of the variation in the likelihood of ever voting for the conservative party. I am not worried about the magnitude of the r squared because I have included the variable I am primarily interested in - Left-Right self placement which explains much of the variation.
+
+Question 3a
+```{r, echo=FALSE}
+avPlots(mbili, "rile",
+        xlab = "Left-right self-placement | others", 
+        ylab = "Likelihood of voting Conservative | others")
+
+```
+
+Potentially influential outliers are 1835 and 2397 because they have the highest leverage and descripancy.
+
+Question 3b
+```{r, echo=FALSE}
+vif(mbili)
+tolerance <- (1/vif(mbili))
+tolerance
+sqrt(vif(mbili))
+
+```
+Question 3b
+
+Interpretation
+
+VIF - The VIF for my independent variables (rile, age, educ and income) are 1.047867, 1.140473, 1.015760 and 1.143110 respectively meaning that variances of the aforementioned variables would be 4.7%, 14%, 1.5% and 14.3% larger than they would be if there was no correlation with other predictors. In other words, their standard errors are roughly inflated by a factor of 1 - their square roots. 
+
+Tolerance - It means that the proportion of independent variables rile, age, educ and income not explained by other independent variables are 0.9543193, 0.8768294, 0.9844842 and 0.8748064 respectively.
+
+Problems multicolinearity generaly causes for regression estimates is that it inflates standard errors of highly collinear variables and induces unstable/inneficient estimates leading to Type II error.
+
+Given my VIFs, this is not a concern since no VIF value is unusually higher compared to others, they all approximately have a value of 1.
+   
+Question 3c
+
+We can run a DFTBETA diagnostic because, as opposed to avPlots manifesting leverage and descripancy, it tells us if outliers have an influence to our regression model and how strong it is.
+
+Question 4a
+```{r, echo=FALSE}
+nne <- lm(con_like~rile+age+educ+income+att_eu, data = mbogo)
+summary(nne)
+
+```
+Interpretation
+
+Question 4a
+
+With the introduction of EU Attitudes predictor, the likelihood of ever voting for the conservative party has, in relative terms, significantly reduced in left-right placement variable with a 0.078 reduction, slightly increased in education and income variables by 0.019 and 0.002 respectively but remained constant with age variable. Since variable rile has significantly reduced, the net effect of its change against education and income variables(0.078-(0.019+0.002)) is dominant. Thus, leading to a reduction in the likelihood of ever voting for the consrvative party. 
+
+This is inline with the approval categories where our baseline category strongly disapprove and category strongly approve have a negative effect to the likelihood of ever voting for the conservative party and are both statistically significant. In comparison, dissapprove, neither nor and approve categories do not have a statistically significant effect.
+
+
+Question 4b
+
+No it could not be used as an interval-scaled variable because intervals between the category coefficients are not of equal size.
+
+Question 4b
+```{r, echo=FALSE}
+mbogo$EU <- NA
+mbogo$EU[mbogo$att_eu == "strongly disapprove"] <- 1
+mbogo$EU[mbogo$att_eu == "disapprove"] <- 2
+mbogo$EU[mbogo$att_eu == "neither nor"] <- 3
+mbogo$EU[mbogo$att_eu == "approve"] <- 4
+mbogo$EU[mbogo$att_eu == "strongly approve"] <- 5
+
+
+nnebi <- lm(con_like~rile+age+educ+income+EU, data = mbogo)
+summary(nnebi)
+```
+Interpretation
+
+Treating the categorical attitudes towards the European Union as an interval level variable, a unit increase in the approval membership leads to on avearge a 0.285232 unit decrease in the likelihood of ever voting for the conservative party. This is statistically significant at 5% level since its t-value is -2.674 which is greater than 2 in absolute terms.
+
+The original assumption about equal gaps between the categories was not justified because treating the variable as an interval level makes it, in aggregate, statistically significant while there are categories that are not statistically significant.
+
+Question 5a
+```{r, echo=FALSE}
+
+plot <- boxplot(mbogo$con_like ~ mbogo$scot, ylab= "Likelihood" , xlab= "Region",
+                main= "Region effect on likelihood for voting Conservatives", 
+                col= "blue")
+```
+Interpretation
+
+1. England/Wales region has a minimum of 0 and a maximum of 10. Its interquartile range is 7 that is made up of the first quartile of 2 and the third quartile of 9. It has a median of 5.
+
+2. Scotland region has a minimum of 0 and a maximum of 10. Its interquartile range is 7 that is made up of the first quartile of 0 and the third quartile of 7. It has a median of 3.
+
+Question 5b
+```{r, echo=FALSE}
+scot <- subset(mbogo, scot == "1")
+rest <- subset(mbogo, scot == "0")
+
+mean1 <- describe(scot$con_like,type=2)
+mean0 <- describe(rest$con_like,type=2)
+
+```
+
+```{r, echo=FALSE}
+(table <- bind_rows(mean1, mean0))
+```
+Interpretation
+
+The likelihood of ever voting for conservative party differ between the two regions because their means and standard errors differ. 
+
+Question 5c
+```{r,echo=FALSE}
+t.test(scot$con_like,rest$con_like, data = mbogo)
+```
+Interpretation
+
+There is a statistically significant difference in the likelihood of ever voting for the conservative party between Scotland and the rest of the country (England/Wales) because the t value is -7.9936 which is greater than 2 in absolute terms. 
+
+Question 6a
+```{r,echo=FALSE}
+sita <- lm(con_like ~ rile+ scot + rile*scot, data = mbogo)
+summary(sita)
+
+```
+Question 6b
+```{r, echo=FALSE}
+skot <- lm(con_like ~ rile , data = scot)
+summary(skot)
+
+atha <- lm(con_like ~ rile , data = rest)
+summary(atha)
+
+```
+Interpretation
+
+The effect of left-right ideology on the likelihood of ever voting for the conservative party in Scotland is, on avarage, 1.2182.
+
+The effect of left-right ideology on the likelihood of ever voting for the conservative party in the rest of the country is, on avearge, 1.30598.
+
+Question 6c
+```{r, echo=FALSE}
+sitasi <- lm(con_like~rile+ age+educ+income+scot+att_eu+rile*scot, data = mbogo)
+summary(sitasi)
+
+```
+Interpretation
+
+rile - Keeping other variables constant, a unit increase on the left-right placement leads to on avearge a 1.169691 increase in the likelihood of ever voting for the conservative party. This is statistically significant at 5% level since its t-value is 17.481 which is greater than 2.
+
+age - Keeping other variables constant, a unit increase in age leads to on average a 0.003027 increase in the likelihood of ever voting for the conservative party. This is not statistically significant at 5% level since its t-value is 0.384 which is less than 2.
+
+educ - Keeping other variables constant, a unit increase in education leads to on average a 0.036240 decrease in the likelihood of ever voting for the conservative party. This is not statistically significant at 5% level since its t-value is 0.700 which is less than 2.
+
+income - Keeping other variables constant, a unit increase in income leads on average a 0.123884 increase in the likelihood of ever voting for the conservative party. This is statistically significant at 5% level since its t-value is 4.221 which is greater than 2.
+
+scot - Keeping other variables constant, respondents in Scotland are less likely to vote for the conservative party by on average 0.969921 unit difference that respondents from England/Wales.
+
+att_eu - Keeping other variables constant, respondents that strongly disapprove the membership in the EU and those that strongly approve it are less likely to vote for the conservative party as apposed to ones that diaspprove, neither approve nor disapprove and approve because their coefficients are statistically significant since their t-values are greater than 2. 
+
+rile:scot - Keeping other variables constant, being a respondent in scotland increases your likelihood of ever voting for the conservative party by, on avearge, 0.063429 compared to being a respondent in England/Wales.
+  
+Summary
+
+The determinants of the likelihood of ever voting for the conservative party are left-right placement, income and att_eu since they are statistically significant at 5% level. Yes, left-right ideology is a good predictor. This is because it is statistically significant at 5% level with a t-value of 17.601 which is the highest of all t-values and it is greater than 2.
+
+
+Appendix
+
+Stargazer
+```{r, echo=FALSE}
+stargazer(mbili, nne, nnebi , sita, sitasi,
+          type = "text",
+          title = "Stargazer",
+          omit.stat=c("f", "ser"),
+          out = "6c_saba.txt")
+
+```
+
+Preparation
+```{r, eval=FALSE}
+
+rm(list=ls())
+
+setwd("C:/Users/Gus/Documents/Hertie/Courses/Stats I/FDA Ass")
+getwd
+
+
+library(foreign)
+library(carData)
+library(stargazer)
+library(car)
+library(ggplot2) 
+library(dplyr) 
+library(tidyr) 
+library(psych)
+library(tinytex)
+
+
+mbogo <- read.dta("ToryVote_final_da.dta")
+```
+
+
+Question 2a
+```{r, eval=FALSE}
+
+mbili <- lm(con_like~rile+ age+educ+income, data = mbogo)
+summary(mbili)
+
+```
+
+
+Question 3a
+```{r, eval=FALSE}
+avPlots(mbili, "rile",
+        xlab = "Left-right self-placement | others", 
+        ylab = "Likelihood of voting Conservative | others")
+
+```
+
+Question 3b
+```{r, eval=FALSE}
+vif(mbili)
+tolerance <- (1/vif(mbili))
+tolerance
+sqrt(vif(mbili))
+
+```
+
+Question 4a
+```{r, eval=FALSE}
+nne <- lm(con_like~rile+age+educ+income+att_eu, data = mbogo)
+summary(nne)
+```
+
+
+Question 4b
+```{r, eval=FALSE}
+mbogo$EU <- NA
+mbogo$EU[mbogo$att_eu == "strongly disapprove"] <- 1
+mbogo$EU[mbogo$att_eu == "disapprove"] <- 2
+mbogo$EU[mbogo$att_eu == "neither nor"] <- 3
+mbogo$EU[mbogo$att_eu == "approve"] <- 4
+mbogo$EU[mbogo$att_eu == "strongly approve"] <- 5
+View(mbogo)
+
+nnebi <- lm(con_like~rile+age+educ+income+EU, data = mbogo)
+summary(nnebi)
+
+```
+
+Question 5a
+```{r, eval=FALSE}
+plot <- boxplot(mbogo$con_like ~ mbogo$scot, ylab= "Likelihood" , xlab= "Region",
+                main= "Region effect on likelihood for voting Conservatives", 
+                col= "blue")
+```
+
+
+Question 5b
+```{r, eval=FALSE}
+scot <- subset(mbogo, scot == "1")
+rest <- subset(mbogo, scot == "0")
+
+mean1 <- describe(scot$con_like,type=2)
+mean0 <- describe(rest$con_like,type=2)
+```
+
+```{r, eval=FALSE}
+(table <- bind_rows(mean1, mean0))
+```
+
+
+Question 5c
+```{r, eval=FALSE}
+t.test(scot$con_like,rest$con_like, data = mbogo)
+
+```
+
+
+Question 6a
+```{r, eval=FALSE}
+sita <- lm(con_like ~ rile+ scot + rile*scot, data = mbogo)
+summary(sita)
+```
+
+Question 6b
+```{r, eval=FALSE}
+skot <- lm(con_like ~ rile , data = scot)
+summary(skot)
+
+atha <- lm(con_like ~ rile , data = rest)
+summary(atha)
+
+```
+
+Question 6c
+```{r, eval=FALSE}
+sitasi <- lm(con_like~rile+ age+educ+income+scot+att_eu+rile*scot, data = mbogo)
+summary(sitasi)
+
+stargazer(mbili, nne, nnebi , sita, sitasi,
+          type = "text",
+          title = "Question 7",
+          out = "6c_saba.txt")
+
+```
