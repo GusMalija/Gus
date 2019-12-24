@@ -1,1 +1,2 @@
 # Gus
+rm(list=ls())
