@@ -1,0 +1,23 @@
+---
+title: "WEP Variables Manipulation"
+author: "Augustine Malija"
+date: "2/12/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+rm(list = ls())
+
+setwd("C:/Users/Gus/Documents/Hertie/Jobs/SCRIPTS/Indicators/Combined")
+
+wep_ind <- read.csv("wep_inds.csv")
+```
+
+
+Transposing my table columns to rows and rows to columns.
+```{r}
+library(data.table)
+wep_inds <- t(wep_ind)
+```
+
